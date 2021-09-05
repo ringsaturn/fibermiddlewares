@@ -11,6 +11,17 @@ import (
 	"github.com/ringsaturn/fibermiddlewares/xresponsetime"
 )
 
+func GeoIPInfo(c *fiber.Ctx) error {
+	val := c.Locals("X-GeoIP-City")
+
+	city, ok := val.(*geoip2.City)
+	if !ok {
+		c = c.Status(500)
+		return c.SendString("internal error")
+	}
+	return c.JSON(city)
+}
+
 func GeoIPLocation(c *fiber.Ctx) error {
 	val := c.Locals("X-GeoIP-City")
 
@@ -39,6 +50,7 @@ func main() {
 		time.Sleep(20 * time.Microsecond)
 		return c.SendString("Hello, World 👋!")
 	})
+	app.Get("/geoip/info", GeoIPInfo)
 	app.Get("/geoip/location", GeoIPLocation)
 	_ = app.Listen("localhost:8999")
 }
